@@ -51,5 +51,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "unity-ar-gps-location-mapbox-route-sample-main - Copy.sln"
+    "dotnet.defaultSolution": "AR_TA_PROJECT_RESTU_FAUZAN.sln"
 }

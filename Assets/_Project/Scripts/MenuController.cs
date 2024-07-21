@@ -344,18 +344,20 @@ namespace ARLocation.MapboxRoutes.SampleProject
 
                         // BuildGameObjects();
 
-                        PlacePrefabAtLocation(new DataEntry
-                        {
-                            lat = r.geometry.coordinates[0].Latitude,
-                            lng = r.geometry.coordinates[0].Longitude,
-                            altitude = 0, // Sesuaikan dengan altitude yang sesuai dari r.geometry.coordinates[0]
-                            altitudeMode = "absolute", // Sesuaikan dengan mode altitude yang sesuai
-                            meshId = "yourPrefabId", // Sesuaikan dengan ID prefab yang ingin ditampilkan
-                            movementSmoothing = 0.5f, // Contoh smoothing
-                            maxNumberOfLocationUpdates = 5, // Contoh jumlah maksimal pembaruan lokasi
-                            useMovingAverage = true, // Contoh penggunaan rata-rata bergerak
-                            hideObjectUtilItIsPlaced = true // Contoh menyembunyikan objek sampai ditempatkan
-                        });
+                        // PlacePrefabAtLocation(new DataEntry
+                        // {
+                        //     lat = r.geometry.coordinates[0].Latitude,
+                        //     lng = r.geometry.coordinates[0].Longitude,
+                        //     altitude = 0, // Sesuaikan dengan altitude yang sesuai dari r.geometry.coordinates[0]
+                        //     altitudeMode = "absolute", // Sesuaikan dengan mode altitude yang sesuai
+                        //     meshId = "Logo", // Sesuaikan dengan ID prefab yang ingin ditampilkan
+                        //     movementSmoothing = 0.5f, // Contoh smoothing
+                        //     maxNumberOfLocationUpdates = 5, // Contoh jumlah maksimal pembaruan lokasi
+                        //     useMovingAverage = true, // Contoh penggunaan rata-rata bergerak
+                        //     hideObjectUtilItIsPlaced = true // Contoh menyembunyikan objek sampai ditempatkan
+                        // });
+
+                        PlacePrefabAtLocation(_dataEntries[s.Results.IndexOf(r)]);
                     }
                 }
             }
@@ -502,6 +504,8 @@ namespace ARLocation.MapboxRoutes.SampleProject
         {
             // Mendapatkan Prefab dari PrefabDatabase berdasarkan meshId atau ID unik lainnya dari DataEntry
             var prefab = PrefabDatabase.GetEntryById(entry.meshId);
+
+            Debug.Log(prefab.name);
 
             if (!prefab)
             {
