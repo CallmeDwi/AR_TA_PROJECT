@@ -1,11 +1,9 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Globalization;
 using System.Xml;
 using UnityEngine.SceneManagement;
-using System.Linq;
 
 namespace ARLocation.MapboxRoutes.SampleProject
 {
@@ -15,41 +13,6 @@ namespace ARLocation.MapboxRoutes.SampleProject
         {
             Route,
             NextTarget
-        }
-
-        public class DataEntry
-        {
-            public int id;
-            public double lat;
-            public double lng;
-            public double altitude;
-            public string altitudeMode;
-            public string name;
-            public string meshId;
-            public float movementSmoothing;
-            public int maxNumberOfLocationUpdates;
-            public bool useMovingAverage;
-            public bool hideObjectUtilItIsPlaced;
-
-            public AltitudeMode getAltitudeMode()
-            {
-                if (altitudeMode == "GroundRelative")
-                {
-                    return AltitudeMode.GroundRelative;
-                }
-                else if (altitudeMode == "DeviceRelative")
-                {
-                    return AltitudeMode.DeviceRelative;
-                }
-                else if (altitudeMode == "Absolute")
-                {
-                    return AltitudeMode.Absolute;
-                }
-                else
-                {
-                    return AltitudeMode.Ignore;
-                }
-            }
         }
 
         public string MapboxToken = "pk.eyJ1IjoiZG1iZm0iLCJhIjoiY2tyYW9hdGMwNGt6dTJ2bzhieDg3NGJxNyJ9.qaQsMUbyu4iARFe0XB2SWg";
@@ -73,16 +36,6 @@ namespace ARLocation.MapboxRoutes.SampleProject
 
         public PrefabDatabase PrefabDatabase;
         public TextAsset XmlDataFile;
-        // private List<DataEntry> _dataEntries = new List<DataEntry>();
-        // private List<GeocodingFeature> results;
-
-        public bool DebugMode;
-        public List<PlaceAtLocation> Instances
-        {
-            get => _placeAtComponents;
-        }
-        private List<DataEntry> _dataEntries = new List<DataEntry>();
-        private List<PlaceAtLocation> _placeAtComponents = new List<PlaceAtLocation>();
 
         private AbstractRouteRenderer currentPathRenderer => s.LineType == LineType.Route ? RoutePathRenderer : NextTargetPathRenderer;
 
@@ -130,7 +83,7 @@ namespace ARLocation.MapboxRoutes.SampleProject
             if (_textStyle == null)
             {
                 _textStyle = new GUIStyle(GUI.skin.label);
-                _textStyle.fontSize = 48;
+                _textStyle.fontSize = 58;
                 _textStyle.fontStyle = FontStyle.Bold;
             }
 
@@ -143,7 +96,7 @@ namespace ARLocation.MapboxRoutes.SampleProject
             if (_textFieldStyle == null)
             {
                 _textFieldStyle = new GUIStyle(GUI.skin.textField);
-                _textFieldStyle.fontSize = 48;
+                _textFieldStyle.fontSize = 58;
             }
             return _textFieldStyle;
         }
@@ -154,7 +107,7 @@ namespace ARLocation.MapboxRoutes.SampleProject
             if (_errorLabelStyle == null)
             {
                 _errorLabelStyle = new GUIStyle(GUI.skin.label);
-                _errorLabelStyle.fontSize = 24;
+                _errorLabelStyle.fontSize = 34;
                 _errorLabelStyle.fontStyle = FontStyle.Bold;
                 _errorLabelStyle.normal.textColor = Color.red;
             }
@@ -169,7 +122,7 @@ namespace ARLocation.MapboxRoutes.SampleProject
             if (_buttonStyle == null)
             {
                 _buttonStyle = new GUIStyle(GUI.skin.button);
-                _buttonStyle.fontSize = 48;
+                _buttonStyle.fontSize = 58;
             }
 
             return _buttonStyle;
@@ -187,30 +140,6 @@ namespace ARLocation.MapboxRoutes.SampleProject
             RoutePathRenderer.enabled = false;
             ARLocationProvider.Instance.OnEnabled.AddListener(onLocationEnabled);
             Map.OnUpdated += OnMapRedrawn;
-        }
-
-        public void SetActiveGameObjects(bool value)
-        {
-            foreach (var i in _placeAtComponents)
-            {
-                i.gameObject.SetActive(value);
-            }
-        }
-
-        public void HideMeshes()
-        {
-            foreach (var i in _placeAtComponents)
-            {
-                Utils.Misc.HideGameObject(i.gameObject);
-            }
-        }
-
-        public void ShowMeshes()
-        {
-            foreach (var i in _placeAtComponents)
-            {
-                Utils.Misc.ShowGameObject(i.gameObject);
-            }
         }
 
         private void OnMapRedrawn()
@@ -321,7 +250,6 @@ namespace ARLocation.MapboxRoutes.SampleProject
                     StartCoroutine(search());
                 }
             }
-
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
             GUILayout.BeginVertical();
@@ -333,41 +261,20 @@ namespace ARLocation.MapboxRoutes.SampleProject
 
             foreach (var r in s.Results)
             {
-                if (GUILayout.Button(r.place_name, new GUIStyle(buttonStyle()) { alignment = TextAnchor.MiddleLeft, fontSize = 24, fixedHeight = 0.05f * Screen.height }))
+                if (GUILayout.Button(r.place_name, new GUIStyle(buttonStyle()) { alignment = TextAnchor.MiddleLeft, fontSize = 40, fixedHeight = 0.05f * Screen.height }))
                 {
-                    // Mengambil koordinat pertama dari geometry
-                    if (r.geometry.coordinates.Count > 0)
-                    {
-                        Location dest = r.geometry.coordinates[0];
-                        StartRoute(dest);
-                        s.View = View.Route;  // Set the view to Route when an item is clicked
-
-                        // BuildGameObjects();
-
-                        // PlacePrefabAtLocation(new DataEntry
-                        // {
-                        //     lat = r.geometry.coordinates[0].Latitude,
-                        //     lng = r.geometry.coordinates[0].Longitude,
-                        //     altitude = 0, // Sesuaikan dengan altitude yang sesuai dari r.geometry.coordinates[0]
-                        //     altitudeMode = "absolute", // Sesuaikan dengan mode altitude yang sesuai
-                        //     meshId = "Logo", // Sesuaikan dengan ID prefab yang ingin ditampilkan
-                        //     movementSmoothing = 0.5f, // Contoh smoothing
-                        //     maxNumberOfLocationUpdates = 5, // Contoh jumlah maksimal pembaruan lokasi
-                        //     useMovingAverage = true, // Contoh penggunaan rata-rata bergerak
-                        //     hideObjectUtilItIsPlaced = true // Contoh menyembunyikan objek sampai ditempatkan
-                        // });
-
-                        PlacePrefabAtLocation(_dataEntries[s.Results.IndexOf(r)]);
-                    }
+                    StartRoute(r.geometry.coordinates[0]);
                 }
             }
 
-            GUILayout.EndVertical();
-            GUILayout.EndVertical();
 
-            drawMap(); // Make sure drawMap is called here
+            GUILayout.EndVertical();
+            // GUILayout.Label(RenderTexture);
+            GUILayout.EndVertical();
+            // GUILayout.Label(RenderTexture, GUILayout.Height(mapSize));
+            drawMap();
+            GUILayout.EndArea();
 
-            GUILayout.EndArea(); // Menutup area safe area
         }
 
         void LoadDataFromXml()
@@ -429,23 +336,6 @@ namespace ARLocation.MapboxRoutes.SampleProject
                         // Tambahkan properti lainnya jika diperlukan
                     };
 
-                    DataEntry entry = new DataEntry()
-                    {
-                        id = id,
-                        lat = lat,
-                        lng = lng,
-                        altitudeMode = altitudeMode,
-                        altitude = altitude,
-                        name = name,
-                        meshId = meshId,
-                        movementSmoothing = movementSmoothing,
-                        maxNumberOfLocationUpdates = maxNumberOfLocationUpdates,
-                        useMovingAverage = useMovingAverage,
-                        hideObjectUtilItIsPlaced = hideObjectUtilItIsPlaced
-                    };
-
-                    _dataEntries.Add(entry);
-
                     s.Results.Add(result);
                 }
                 catch (XmlException e)
@@ -453,90 +343,6 @@ namespace ARLocation.MapboxRoutes.SampleProject
                     Debug.LogError("[MenuController]: Failed to read node: " + e.Message);
                 }
             }
-
-            // Contoh debugging untuk memastikan data dimuat dengan benar
-            Debug.Log("Number of results loaded: " + s.Results.Count);
-            foreach (var result in s.Results)
-            {
-                Debug.Log("Result place_name: " + result.place_name);
-            }
-        }
-
-        void BuildGameObjects()
-        {
-            foreach (var entry in _dataEntries)
-            {
-                var Prefab = PrefabDatabase.GetEntryById(entry.meshId);
-
-                if (!Prefab)
-                {
-                    Debug.LogWarning($"[ARLocation#WebMapLoader]: Prefab {entry.meshId} not found.");
-                    continue;
-                }
-
-                var PlacementOptions = new PlaceAtLocation.PlaceAtOptions()
-                {
-                    MovementSmoothing = entry.movementSmoothing,
-                    MaxNumberOfLocationUpdates = entry.maxNumberOfLocationUpdates,
-                    UseMovingAverage = entry.useMovingAverage,
-                    HideObjectUntilItIsPlaced = entry.hideObjectUtilItIsPlaced
-                };
-
-                var location = new Location()
-                {
-                    Latitude = entry.lat,
-                    Longitude = entry.lng,
-                    Altitude = entry.altitude,
-                    AltitudeMode = entry.getAltitudeMode(),
-                    Label = entry.name
-                };
-
-                var instance = PlaceAtLocation.CreatePlacedInstance(Prefab,
-                                                                    location,
-                                                                    PlacementOptions,
-                                                                    DebugMode);
-
-                _placeAtComponents.Add(instance.GetComponent<PlaceAtLocation>());
-            }
-        }
-
-        public void PlacePrefabAtLocation(DataEntry entry)
-        {
-            // Mendapatkan Prefab dari PrefabDatabase berdasarkan meshId atau ID unik lainnya dari DataEntry
-            var prefab = PrefabDatabase.GetEntryById(entry.meshId);
-
-            Debug.Log(prefab.name);
-
-            if (!prefab)
-            {
-                Debug.LogWarning($"Prefab {entry.meshId} not found in PrefabDatabase.");
-                return;
-            }
-
-            // Membuat Location dari koordinat geografis DataEntry
-            var location = new Location()
-            {
-                Latitude = entry.lat,
-                Longitude = entry.lng,
-                Altitude = entry.altitude,
-                AltitudeMode = entry.getAltitudeMode(), // Sesuaikan dengan mode altitudenya
-            };
-
-            // Opsi untuk menempatkan prefab di lokasi
-            var placeOptions = new PlaceAtLocation.PlaceAtOptions()
-            {
-                MovementSmoothing = entry.movementSmoothing, // Contoh smoothing
-                MaxNumberOfLocationUpdates = entry.maxNumberOfLocationUpdates, // Contoh jumlah maksimal pembaruan lokasi
-                UseMovingAverage = entry.useMovingAverage, // Contoh penggunaan rata-rata bergerak
-                HideObjectUntilItIsPlaced = entry.hideObjectUtilItIsPlaced // Contoh menyembunyikan objek sampai ditempatkan
-            };
-
-            // Membuat instance prefab di lokasi yang ditentukan
-            var instance = PlaceAtLocation.CreatePlacedInstance(prefab, location, placeOptions);
-
-            // Tambahkan instance ke dalam list atau array jika diperlukan
-            // _placeAtComponents.Add(instance.GetComponent<PlaceAtLocation>());
-            _placeAtComponents.Add(instance.GetComponent<PlaceAtLocation>());
         }
 
         private Texture2D _separatorTexture;
@@ -704,11 +510,4 @@ namespace ARLocation.MapboxRoutes.SampleProject
             }
         }
     }
-}
-
-// Define your Result class structure here
-public class Result
-{
-    public string place_name { get; set; }
-    // Add other properties as needed
 }
